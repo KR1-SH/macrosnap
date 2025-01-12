@@ -9,7 +9,7 @@ import ollama
 import io
 import tempfile
 
-co = cohere.ClientV2("THESECRETKEYs")
+co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
@@ -383,6 +383,27 @@ def AI_response():
     if st.button("Back to Menu"):
         st.session_state.page = "menu"
 
+prompt_message = f"""
+    Please provide the nutrition facts for the food item you identified.
+    First name the food item
+    Next state the serving size of the food item
+    Then provide the calories of the food item 
+    Then provide the rest of the nutrition facts
+    """
+
+prompt_structure = f"""
+    This is how the response should be structured, follow this format exactly:
+    Item Name: Bear Paws  
+    - Serving Size: 1 Pouch (40g)
+    - Calories: 170
+    
+    Nutrient Content Per Serving:  
+    - Total Fat: 5g
+    - Total Carbohydrate: 27g
+    - Sugars: 13g
+    - Protein: 3g
+    """
+
 def AI_response_opt1():
     if 'identified_food' not in st.session_state or not st.session_state['identified_food']:
         st.error("No food item detected. Please take a photo first.")
@@ -393,25 +414,10 @@ def AI_response_opt1():
     st.markdown("<h1 style='text-align: center;'>Nutrition Facts 📊</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    prompt_message = f"""
-    Provide the nutritional facts for the following food item in this format:
-    
-    Item Name: <Food Name>  
-    Serving Size: <Serving Size>  
-    Calories: <Calories>  
-
-    Nutrient Content per Serving:  
-    Total Fat: <Fat> g  
-    Total Carbohydrate: <Carbs> g  
-    Sugars: <Sugars> g  
-    Protein: <Protein> g  
-    """
-
     response = co.chat(
         model="command-r-plus-08-2024",
         messages=[
-            {"role": "user", "content": f"{prompt_message}\n\nFood Item: {st.session_state['identified_food']}"}
-        ],
+            {"role": "user", "content": prompt_message},{"role": "user", "content": prompt_structure}],
     )
     nutrition_info = response.message.content[0].text
     st.markdown(nutrition_info)
