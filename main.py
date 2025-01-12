@@ -5,7 +5,7 @@ import os
 import json
 import cohere
 
-co = cohere.Client('YOUR_API_KEY')
+co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
@@ -60,8 +60,6 @@ Fat: 28g
 Carbohydrates: 40g
 Sugar: 5g
 """
-global user_inputs
-user_inputs = []
 
 def inject_custom_css(image_path):
     st.markdown(
@@ -228,12 +226,18 @@ def menu():
         if st.button("Find foods you can make now!", use_container_width=True):
             st.session_state.page = "option2"
 
+user_inputs = []
 def option2():
+    global user_inputs
     st.markdown("<h1 style='text-align: center;'>Here's A Quick Questionnaire</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("### Do you have any dietary restrictions?")
+    dietary_restrictions = ''
     other_restriction = ''
+    food_goals = ''
+    available_foods = ''   
+    primary_meal_goal = ''
     dietary_restrictions = st.radio(
         "Select any dietary restrictions:",
         ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Other"]
@@ -257,22 +261,23 @@ def option2():
         primary_meal_goal = st.text_input("Specify your other goal:")
 
     if st.button("Submit"):
+        user_inputs.append("The users dietary restrictions are: " + dietary_restrictions) 
+        user_inputs.append("The users food goals are: " + food_goals)
+        user_inputs.append("The food the user has available to make food right now are: " + available_foods)
+        user_inputs.append("The users primary meal goal is: " + primary_meal_goal)
         st.markdown("### Here's a summary of your answers:")
         st.write(f"Dietary restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
         st.write(f"Food goals: {food_goals}")
         st.write(f"Available food items: {available_foods}")
         st.write(f"Meals per day: {primary_meal_goal}")
 
-    if st.button("Continue", use_container_width=True):
-        user_inputs.append(dietary_restrictions) 
-        user_inputs.append(food_goals)
-        user_inputs.append(available_foods)
-        user_inputs.append(primary_meal_goal)
-        AI_response(dietary_restrictions, food_goals, available_foods, primary_meal_goal)
+    if st.button("Continue"):
+        st.session_state.page = "AI_response"
 
-def AI_response(dietary_restrictions, food_goals, available_foods, primary_meal_goal):
+def AI_response():
     st.markdown("<h1 style='text-align: center;'>Food You Can Eat</h1>", unsafe_allow_html=True)
-    message = f"""Can you make a healthy recipe for {food_goals} using {available_foods} that is {dietary_restrictions} and {primary_meal_goal}"""
+    st.markdown("<br>", unsafe_allow_html=True)
+    message = f"""Can you make a healthy recipe using these user inputs: 1.{user_inputs[1]} 2.{user_inputs[2]} 3.{user_inputs[0]} and 4.{user_inputs[3]}"""
     response = co.chat(
         model="command-r-plus-08-2024",
         messages=[{"role": "system", "content": message_configuration},
@@ -303,8 +308,8 @@ def main():
             menu()
         elif st.session_state.page == "option2":
             option2()
-        #elif st.session_state.page == "AI_response":
-           # AI_response()
+        elif st.session_state.page == "AI_response":
+           AI_response()
     else:
         st.error("Background image 'background.avif' not found in the 'images' folder.")
 
