@@ -27,6 +27,8 @@ def login():
             st.success("Login successful!")
         except:
             st.error("Invalid Login Chief")
+    if st.button('Back'):
+        st.session_state.page = "start"
 
 def signup():
     st.title("Signup Page")
@@ -38,6 +40,8 @@ def signup():
             st.success("Login successful!")
         except:
             st.error("Invalid signup gang")
+    if st.button('Back'):
+        st.session_state.page = "start"
 
 def start_page():
     st.title("Welcome to the App!")
