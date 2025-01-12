@@ -63,6 +63,22 @@ Nutrition Information (per serving):
     Sugar: 5g
 """
 
+st.markdown(
+    """
+    <style>
+    .custom-header {
+        font-family: 'Dancing Script', cursive !important; 
+        font-size: 36px !important; 
+        color: #2E8B57; 
+        text-align: center;
+        margin-top: -50px;  
+    }
+    </style>
+    <p class="custom-header">Track Smarter. Eat Better. Live Healthier.</p>
+    """,
+    unsafe_allow_html=True
+)
+
 def inject_custom_css(image_path):
     st.markdown(
         f"""
@@ -78,6 +94,7 @@ def inject_custom_css(image_path):
             text-align: center;
             color: white;
             padding: 100px 0;
+            margin-top: -210px;
         }}
 
         .start-container h1 {{
@@ -137,20 +154,47 @@ def inject_custom_css(image_path):
     )
 
 def about_page():
-    st.markdown('<div class="about-container">', unsafe_allow_html=True)  # About page container
-    st.header("About the App")
-    st.write("""
-    Our app is designed to provide seamless login and signup functionality.
-    We aim to deliver a user-friendly experience with a beautiful interface, smooth transitions, and easy navigation.
+    col1, col2 = st.columns([1, 1])
 
-    Features:
-    - Secure login and sign-up process
-    - Parallax scroll effect for an immersive experience
-    - Intuitive design with clear navigation
+    col1.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+    .custom-header {
+        font-family: 'Lato', serif;
+        font-size: 30px !important;  
+        color: #2E8B57;  
+        text-align: center;
+        margin-top: -50px;  
+    }
+    </style>
+    <p class="custom-header">What is MacroSpace? 🤔</p>
+    """,
+    unsafe_allow_html=True
+    )
+    col1.image('person.png')
+    col2.text('''
+              Key Features:
+                🍽️ AI-Powered Macro Tracking – Instantly analyze your meals by snapping a photo.
+                📝 Personalized Meal Plans – Custom recommendations based on your goals and preferences.
+                🥗 Dietary Flexibility – Accommodates all diets, from vegan to keto.
+                📊 Progress Tracking – Monitor your nutrition and fitness goals in one place.
+                🤖 Smart Insights – AI-driven suggestions to optimize your health journey.
+              ''')
 
-    Feel free to explore and get started!
-    """)
     st.markdown('</div>', unsafe_allow_html=True)
+
+    st.text('''
+            MacroSnap is your all-in-one nutrition companion designed to make tracking your diet effortless 
+            and accurate. Powered by advanced AI from Cohere, MacroSnap personalizes your health journey with 
+            smart recommendations tailored to your food goals, dietary restrictions, and weight objectives.
+
+            Snap a photo of your meal, and let MacroSnap analyze your macros in seconds—no manual logging needed! 
+            Whether you're aiming to lose weight, build muscle, or maintain a balanced diet, MacroSnap empowers you with 
+            actionable insights to make healthier choices.
+
+            ''')
+
 
 
 def login():
@@ -182,27 +226,29 @@ def signup():
     if st.button('Back'):
         st.session_state.page = "start"
 
-def start_page(image_path):
-    st.markdown('<div class="parallax"></div>', unsafe_allow_html=True)  # Parallax background
-    
-    st.markdown('<div class="start-container">', unsafe_allow_html=True)  # Start page container
-    st.header("Welcome to Our App!")
+def start_page():
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.image('logo-removebg-preview.png',width=300)
+    st.markdown('<div class="start-container">', unsafe_allow_html=True)  
+    st.header("Welcome to MacroSnap!", divider="green")
     st.write("Scroll down to learn more about the app.")
     
-    # Buttons for navigating to login/signup
     if st.button("Login", key="login", use_container_width=True):
-        st.session_state.page = "login"  # Navigate to login page
+        st.session_state.page = "login"  
     if st.button("Sign Up", key="signup", use_container_width=True):
-        st.session_state.page = "signup"  # Navigate to signup page
+        st.session_state.page = "signup" 
 
     st.markdown('</div>', unsafe_allow_html=True)
+    about_page()
 
 def menu():
     st.markdown("<h1 style='text-align: center;'>What Would You Like To Do?</h1>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Add custom CSS for spacing between columns
+ 
     st.markdown("""
         <style>
             .css-1d391kg {
@@ -230,7 +276,8 @@ def menu():
 
 user_inputs = []
 def option2():
-    global user_inputs
+    if "user_inputs" not in st.session_state:
+        st.session_state.user_inputs = []
 
     st.markdown("<h1 style='text-align: center;'>Here's A Quick Questionnaire</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -259,17 +306,15 @@ def option2():
         primary_meal_goal = st.text_input("Specify your other goal:")
 
     if st.button("Submit"):
-        user_inputs = []
-
-        user_inputs.append(f"Dietary Restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
-        user_inputs.append(f"Food Goals: {food_goals}")
-        user_inputs.append(f"Available Food Items: {available_foods}")
-        user_inputs.append(f"Primary Meal Goal: {primary_meal_goal}")
+        st.session_state.user_inputs = [
+            f"Dietary Restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}",
+            f"Food Goals: {food_goals}",
+            f"Available Food Items: {available_foods}",
+            f"Primary Meal Goal: {primary_meal_goal}",
+        ]
 
         st.success("Responses Submitted Successfully!")
-        st.write("Current User Inputs:", user_inputs)
         st.session_state.page = "AI_response"
-
 def AI_response():
     if "user_inputs" not in st.session_state or len(st.session_state.user_inputs) < 4:
         st.error("Not enough user inputs available. Please complete the questionnaire.")
@@ -282,24 +327,23 @@ def AI_response():
     st.markdown("<h1 style='text-align: center;'>Food You Can Eat</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    message = f"""Can you make a healthy recipe that follows these user inputs: 
-    1. {user_inputs[1]} 
-    2. {user_inputs[2]} 
-    3. {user_inputs[0]} 
-    4. {user_inputs[3]}"""
+    message = f"""Can you make a healthy recipe using these user inputs: 
+    
+            {user_inputs[1]} 
+            {user_inputs[2]}
+            {user_inputs[0]}
+            {user_inputs[3]}
+            """
     response = co.chat(
-        model="command-r-plus-08-2024",
-        messages=[{"role": "system", "content": message_configuration},
-                {"role": "system", "content": message_structure},
-                {"role": "user", "content": message},
-    ],
+    model="command-r-plus-08-2024",
+    messages=[{"role": "system", "content": message_configuration},{"role": "system", "content": message_structure},{"role": "user", "content": message},],
 
     )
     st.markdown(response.message.content[0].text)
 
     if st.button("Back to Menu"):
         st.session_state.page = "menu"
-
+        
 def main():
     if "page" not in st.session_state:
         st.session_state.page = "start"  
@@ -309,7 +353,7 @@ def main():
     if os.path.exists(image_path):
         inject_custom_css(image_path)
         if st.session_state.page == "start":
-            start_page(image_path)
+            start_page()
         elif st.session_state.page == "about":
             about_page()
         elif st.session_state.page == "login":
