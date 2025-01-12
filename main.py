@@ -4,6 +4,10 @@ import time
 import os
 import json
 import cohere
+from PIL import Image
+import ollama
+import io
+import tempfile
 
 co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
 
@@ -32,6 +36,7 @@ Make the recipe titles bold and bigger than the rest of the text
 Number the recipes and do not use any hashtags in the response
 State whether the recipe can be made with the available food items or not
 """
+
 
 message_structure = """This is how the response should be structured, follow this format exactly:
 Recipe 1: Chicken and Vegetable Pasta
@@ -63,6 +68,7 @@ Nutrition Information (per serving):
     Sugar: 5g
 """
 
+
 st.markdown(
     """
     <style>
@@ -87,6 +93,7 @@ def inject_custom_css(image_path):
         body {{
             font-family: Arial, sans-serif;
         }}
+
         
         /* Start Page Styling */
         .start-container {{
@@ -266,13 +273,44 @@ def menu():
         st.markdown("<h3 style='text-align: center;'>Take A Photo Of Your Food!</h3>", unsafe_allow_html=True)
         st.image("photo1.jpeg", width=400)
         if st.button("Take a photo of your food!", use_container_width=True):
-            st.write("You selected Option 1")
+            st.session_state.page = "option1"
 
     with col2:
         st.markdown("<h3 style='text-align: center;'>Make Some Food Now!</h3>", unsafe_allow_html=True)
         st.image("photo2.jpg", width=400)
         if st.button("Find foods you can make now!", use_container_width=True):
             st.session_state.page = "option2"
+
+def option1():
+    camera_photo = st.camera_input("Take a food!")
+    
+    if camera_photo is not None:
+        img = Image.open(camera_photo)
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+            img.save(temp_file, format="PNG")
+            temp_file_path = temp_file.name
+        
+        res = ollama.chat(
+            model='llava:7b',
+            messages=[
+                {
+                    'role': 'user',
+                    'content': 'Identify this food item.',
+                    'images': [temp_file_path]
+                }
+            ]
+        )
+        if 'message' in res:
+            identified_food = res['message']['content']
+            st.session_state['identified_food'] = identified_food
+            if st.button("Let's go", key="AI_response_opt1", use_container_width=True):
+                st.session_state.page = "AI_response_opt1"
+        else:
+            st.write("No response from Ollama.")
+    ##else:
+        #st.write("Please take a photo first.")
+
 
 user_inputs = []
 def option2():
@@ -315,6 +353,7 @@ def option2():
 
         st.success("Responses Submitted Successfully!")
         st.session_state.page = "AI_response"
+
 def AI_response():
     if "user_inputs" not in st.session_state or len(st.session_state.user_inputs) < 4:
         st.error("Not enough user inputs available. Please complete the questionnaire.")
@@ -343,7 +382,43 @@ def AI_response():
 
     if st.button("Back to Menu"):
         st.session_state.page = "menu"
-        
+
+def AI_response_opt1():
+    if 'identified_food' not in st.session_state or not st.session_state['identified_food']:
+        st.error("No food item detected. Please take a photo first.")
+        if st.button("Go Back"):
+            st.session_state.page = "option1"
+        return
+
+    st.markdown("<h1 style='text-align: center;'>Nutrition Facts 📊</h1>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    prompt_message = f"""
+    Provide the nutritional facts for the following food item in this format:
+    
+    Item Name: <Food Name>  
+    Serving Size: <Serving Size>  
+    Calories: <Calories>  
+
+    Nutrient Content per Serving:  
+    Total Fat: <Fat> g  
+    Total Carbohydrate: <Carbs> g  
+    Sugars: <Sugars> g  
+    Protein: <Protein> g  
+    """
+
+    response = co.chat(
+        model="command-r-plus-08-2024",
+        messages=[
+            {"role": "user", "content": f"{prompt_message}\n\nFood Item: {st.session_state['identified_food']}"}
+        ],
+    )
+    nutrition_info = response.message.content[0].text
+    st.markdown(nutrition_info)
+
+    if st.button("Back to Menu"):
+        st.session_state.page = "menu"
+
 def main():
     if "page" not in st.session_state:
         st.session_state.page = "start"  
@@ -366,6 +441,10 @@ def main():
             option2()
         elif st.session_state.page == "AI_response":
            AI_response()
+        elif st.session_state.page == "option1":
+            option1()
+        elif st.session_state.page == "AI_response_opt1":
+            AI_response_opt1()
     else:
         st.error("Background image 'background.avif' not found in the 'images' folder.")
 
