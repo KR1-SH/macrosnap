@@ -8,9 +8,9 @@
 </div>
 
 <p align="center">
-  <img src="images/home.png" width="275px" height="250px"/>
-  <img src="images/about.png" width="275px" height="250px"/>
-  <img src="images/option.png" width="275px" height="250px"/>
+  <img src="home.png" width="275px" height="250px"/>
+  <img src="about.png" width="275px" height="250px"/>
+  <img src="option.png" width="275px" height="250px"/>
 </p>
 
 [Website Link]()
