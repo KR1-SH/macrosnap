@@ -27,38 +27,40 @@ message_configuration = """Style Guide
 First list out the name of the dish and its ingredients
 Second list the instructions on how to cook the recipe
 Lastly only list out the number of calories and protein of the meal
-Using this structure create only 2 recipes
+Using this structure create only 3 recipes
+Make the recipe titles bold and bigger than the rest of the text
 Number the recipes and do not use any hashtags in the response
+State whether the recipe can be made with the available food items or not
 """
 
-message_structure = """This is how the response should be structured:
+message_structure = """This is how the response should be structured, follow this format exactly:
 Recipe 1: Chicken and Vegetable Pasta
 
 Ingredients:
-2 boneless, skinless chicken breasts, cut into bite-sized pieces
-1 medium onion, diced
-2 bell peppers (any color), sliced
-200g pasta noodles (penne, fusilli, or your choice)
-2 tablespoons olive oil
-2 cloves garlic, minced
-1 teaspoon Italian seasoning
-Salt and pepper to taste
-Grated Parmesan cheese for serving (optional)
+- 2 boneless, skinless chicken breasts, cut into bite-sized pieces
+- 1 medium onion, diced
+- 2 bell peppers (any color), sliced
+- 200g pasta noodles (penne, fusilli, or your choice)
+- 2 tablespoons olive oil
+- 2 cloves garlic, minced
+- 1 teaspoon Italian seasoning
+- Salt and pepper to taste
+- Grated Parmesan cheese for serving (optional)
 
 Instructions:
-Cook pasta according to package instructions in salted water until al dente. Drain and set aside.
-Heat olive oil in a large skillet over medium-high heat. Add the diced onion and sliced bell peppers. Sauté for about 5 minutes until the vegetables start to soften.
-Add the minced garlic and Italian seasoning to the skillet, cooking for another minute while stirring frequently.
-Place the chicken pieces into the skillet and cook for 6-8 minutes, stirring occasionally, until the chicken is cooked through and no longer pink.
-Return the cooked pasta to the skillet and toss everything together until well combined. Season with salt and pepper to taste.
-Serve the pasta dish with grated Parmesan cheese on top, if desired.
+1. Cook pasta according to package instructions in salted water until al dente. Drain and set aside.
+2. Heat olive oil in a large skillet over medium-high heat. Add the diced onion and sliced bell peppers. Sauté for about 5 minutes until the vegetables start to soften.
+3. Add the minced garlic and Italian seasoning to the skillet, cooking for another minute while stirring frequently.
+4. Place the chicken pieces into the skillet and cook for 6-8 minutes, stirring occasionally, until the chicken is cooked through and no longer pink.
+5. Return the cooked pasta to the skillet and toss everything together until well combined. Season with salt and pepper to taste.
+6. Serve the pasta dish with grated Parmesan cheese on top, if desired.
 
 Nutrition Information (per serving):
-Calories: Approximately 550 calories
-Protein: 35g
-Fat: 28g
-Carbohydrates: 40g
-Sugar: 5g
+    Calories: Approximately 550 calories
+    Protein: 35g
+    Fat: 28g
+    Carbohydrates: 40g
+    Sugar: 5g
 """
 
 def inject_custom_css(image_path):
@@ -229,19 +231,16 @@ def menu():
 user_inputs = []
 def option2():
     global user_inputs
+
     st.markdown("<h1 style='text-align: center;'>Here's A Quick Questionnaire</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("### Do you have any dietary restrictions?")
-    dietary_restrictions = ''
-    other_restriction = ''
-    food_goals = ''
-    available_foods = ''   
-    primary_meal_goal = ''
     dietary_restrictions = st.radio(
         "Select any dietary restrictions:",
-        ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Other"]
-)
+        ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "None", "Other"]
+    )
+    other_restriction = ""
     if dietary_restrictions == "Other":
         other_restriction = st.text_input("Specify your other dietary restriction:")
 
@@ -256,28 +255,38 @@ def option2():
         "Select your primary goal:",
         ["Weight loss", "Muscle gain", "Improved health", "Convenience", "Other"]
     )
-
     if primary_meal_goal == "Other":
         primary_meal_goal = st.text_input("Specify your other goal:")
 
     if st.button("Submit"):
-        user_inputs.append("The users dietary restrictions are: " + dietary_restrictions) 
-        user_inputs.append("The users food goals are: " + food_goals)
-        user_inputs.append("The food the user has available to make food right now are: " + available_foods)
-        user_inputs.append("The users primary meal goal is: " + primary_meal_goal)
-        st.markdown("### Here's a summary of your answers:")
-        st.write(f"Dietary restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
-        st.write(f"Food goals: {food_goals}")
-        st.write(f"Available food items: {available_foods}")
-        st.write(f"Meals per day: {primary_meal_goal}")
+        user_inputs = []
 
-    if st.button("Continue"):
+        user_inputs.append(f"Dietary Restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
+        user_inputs.append(f"Food Goals: {food_goals}")
+        user_inputs.append(f"Available Food Items: {available_foods}")
+        user_inputs.append(f"Primary Meal Goal: {primary_meal_goal}")
+
+        st.success("Responses Submitted Successfully!")
+        st.write("Current User Inputs:", user_inputs)
         st.session_state.page = "AI_response"
 
 def AI_response():
+    if "user_inputs" not in st.session_state or len(st.session_state.user_inputs) < 4:
+        st.error("Not enough user inputs available. Please complete the questionnaire.")
+        if st.button("Go Back"):
+            st.session_state.page = "option2"
+        return
+
+    user_inputs = st.session_state.user_inputs
+
     st.markdown("<h1 style='text-align: center;'>Food You Can Eat</h1>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-    message = f"""Can you make a healthy recipe using these user inputs: 1.{user_inputs[1]} 2.{user_inputs[2]} 3.{user_inputs[0]} and 4.{user_inputs[3]}"""
+
+    message = f"""Can you make a healthy recipe that follows these user inputs: 
+    1. {user_inputs[1]} 
+    2. {user_inputs[2]} 
+    3. {user_inputs[0]} 
+    4. {user_inputs[3]}"""
     response = co.chat(
         model="command-r-plus-08-2024",
         messages=[{"role": "system", "content": message_configuration},
@@ -287,6 +296,9 @@ def AI_response():
 
     )
     st.markdown(response.message.content[0].text)
+
+    if st.button("Back to Menu"):
+        st.session_state.page = "menu"
 
 def main():
     if "page" not in st.session_state:
