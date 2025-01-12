@@ -5,7 +5,7 @@ import os
 import json
 import cohere
 
-co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
+co = cohere.ClientV2("SOME KEY")
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
