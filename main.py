@@ -3,7 +3,7 @@ import streamlit as st
 import time
 import os
 import json
-import cohere
+import cohere 
 from PIL import Image
 import ollama
 import io
