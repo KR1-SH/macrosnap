@@ -179,10 +179,45 @@ def menu():
             st.write("You selected Option 1")
 
     with col2:
-        st.markdown("<h3 style='text-align: center;'>Find Some Foods You Can Make Now!</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center;'>Make Some Food Now!</h3>", unsafe_allow_html=True)
         st.image("photo2.jpg", width=400)
         if st.button("Find foods you can make now!", use_container_width=True):
-            st.write("You selected Option 2")
+            st.session_state.page = "option2"
+
+def option2():
+    st.markdown("<h1 style='text-align: center;'>Here's A Quick Questionnaire</h1>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown("### Do you have any dietary restrictions?")
+    dietary_restrictions = st.multiselect(
+        "Select any dietary restrictions:",
+        ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "None"],
+        default=[]
+    )
+    other_restriction = st.text_input("Other dietary restrictions (if any):", "")
+
+    st.markdown("### Do you have any specific food goals (e.g., cutting, bulking, maintaining)?")
+    food_goals = st.text_input("Enter your food goals:")
+
+    st.markdown("### What food items do you currently have access to that you want to use to make a meal?")
+    available_foods = st.text_area("List the food items you have:")
+
+    st.markdown("### What is your primary goal with your meals?")
+    primary_meal_goal = st.radio(
+        "Select your primary goal:",
+        ["Weight loss", "Muscle gain", "Improved health", "Convenience", "Other"]
+    )
+
+    if primary_meal_goal == "Other":
+        primary_meal_goal = st.text_input("Specify your other goal:")
+
+    if st.button("Submit"):
+        st.markdown("### Here's a summary of your answers:")
+        st.write(f"Dietary restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
+        st.write(f"Food goals: {food_goals}")
+        st.write(f"Available food items: {available_foods}")
+        st.write(f"Meals per day: {primary_meal_goal}")
+
 
 def main():
     if "page" not in st.session_state:
@@ -202,6 +237,8 @@ def main():
             signup()
         elif st.session_state.page == "menu":
             menu()
+        elif st.session_state.page == "option2":
+            option2()
     else:
         st.error("Background image 'background.avif' not found in the 'images' folder.")
 
