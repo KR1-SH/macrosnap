@@ -2,6 +2,8 @@ import pyrebase
 import streamlit as st
 import time
 import os
+import json
+import cohere
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
@@ -18,6 +20,45 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 auth = firebase.auth()
 
 import streamlit as st
+
+message_configuration = """Style Guide
+First list out the name of the dish and its ingredients
+Second list the instructions on how to cook the recipe
+Lastly only list out the number of calories and protein of the meal
+Using this structure create only 2 recipes
+Number the recipes and do not use any hashtags in the response
+"""
+
+message_structure = """This is how the response should be structured:
+Recipe 1: Chicken and Vegetable Pasta
+
+Ingredients:
+2 boneless, skinless chicken breasts, cut into bite-sized pieces
+1 medium onion, diced
+2 bell peppers (any color), sliced
+200g pasta noodles (penne, fusilli, or your choice)
+2 tablespoons olive oil
+2 cloves garlic, minced
+1 teaspoon Italian seasoning
+Salt and pepper to taste
+Grated Parmesan cheese for serving (optional)
+
+Instructions:
+Cook pasta according to package instructions in salted water until al dente. Drain and set aside.
+Heat olive oil in a large skillet over medium-high heat. Add the diced onion and sliced bell peppers. Sauté for about 5 minutes until the vegetables start to soften.
+Add the minced garlic and Italian seasoning to the skillet, cooking for another minute while stirring frequently.
+Place the chicken pieces into the skillet and cook for 6-8 minutes, stirring occasionally, until the chicken is cooked through and no longer pink.
+Return the cooked pasta to the skillet and toss everything together until well combined. Season with salt and pepper to taste.
+Serve the pasta dish with grated Parmesan cheese on top, if desired.
+
+Nutrition Information (per serving):
+Calories: Approximately 550 calories
+Protein: 35g
+Fat: 28g
+Carbohydrates: 40g
+Sugar: 5g
+"""
+user_inputs = []
 
 def inject_custom_css(image_path):
     st.markdown(
@@ -213,12 +254,27 @@ def option2():
         primary_meal_goal = st.text_input("Specify your other goal:")
 
     if st.button("Submit"):
+        user_inputs.append(dietary_restrictions) 
+        user_inputs.append(food_goals)
+        user_inputs.append(available_foods)
+        user_inputs.append(primary_meal_goal)
         st.markdown("### Here's a summary of your answers:")
         st.write(f"Dietary restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
         st.write(f"Food goals: {food_goals}")
         st.write(f"Available food items: {available_foods}")
         st.write(f"Meals per day: {primary_meal_goal}")
 
+def AI_response():
+    message = f"""Can you make a healthy recipe for {user_inputs[1]} using {user_inputs[2]} that is {user_inputs[0]}"""
+    response = co.chat(
+        model="command-r-plus-08-2024",
+        messages=[{"role": "system", "content": message_configuration},
+                {"role": "system", "content": message_structure},
+                {"role": "user", "content": message},
+    ],
+
+    )
+    print(response.message.content[0].text)
 
 def main():
     if "page" not in st.session_state:
