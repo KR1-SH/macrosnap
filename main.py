@@ -189,6 +189,7 @@ def option2():
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("### Do you have any dietary restrictions?")
+    other_restriction = ''
     dietary_restrictions = st.radio(
         "Select any dietary restrictions:",
         ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Other"]
