@@ -1,6 +1,7 @@
 import pyrebase
 import streamlit as st
-
+import time
+import os
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
@@ -16,6 +17,97 @@ firebaseConfig = {
 firebase = pyrebase.initialize_app(firebaseConfig)
 auth = firebase.auth()
 
+import streamlit as st
+
+def inject_custom_css(image_path):
+    st.markdown(
+        f"""
+        <style>
+        /* Global styling */
+        body {{
+            font-family: Arial, sans-serif;
+        }}
+        
+        /* Start Page Styling */
+        .start-container {{
+            position: relative;
+            text-align: center;
+            color: white;
+            padding: 100px 0;
+        }}
+
+        .start-container h1 {{
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }}
+
+        .start-container p {{
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+        }}
+
+        .start-button {{
+            font-size: 1.25rem;
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background-color: #008CBA;
+            color: white;
+            border-radius: 10px;
+            transition: 0.3s ease;
+        }}
+
+        .start-button:hover {{
+            background-color: #005f73;
+        }}
+
+        /* Parallax effect */
+        .parallax {{
+            background-image: url('{image_path}');
+            height: 100%;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+        }}
+
+        /* About Page Styling */
+        .about-container {{
+            padding: 50px;
+            background-color: #f2f2f2;
+            text-align: center;
+        }}
+
+        .about-container h2 {{
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }}
+
+        .about-container p {{
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }}
+        </style>
+        """, unsafe_allow_html=True
+    )
+
+def about_page():
+    st.markdown('<div class="about-container">', unsafe_allow_html=True)  # About page container
+    st.header("About the App")
+    st.write("""
+    Our app is designed to provide seamless login and signup functionality.
+    We aim to deliver a user-friendly experience with a beautiful interface, smooth transitions, and easy navigation.
+
+    Features:
+    - Secure login and sign-up process
+    - Parallax scroll effect for an immersive experience
+    - Intuitive design with clear navigation
+
+    Feel free to explore and get started!
+    """)
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 def login():
     st.title("Login Page")
@@ -25,6 +117,8 @@ def login():
         try:
             user = auth.sign_in_with_email_and_password(username,password)
             st.success("Login successful!")
+            time.sleep(2.5)
+            st.session_state.page = "menu" 
         except:
             st.error("Invalid Login Chief")
     if st.button('Back'):
@@ -38,33 +132,78 @@ def signup():
         try:
             user = auth.create_user_with_email_and_password(username,password)
             st.success("Login successful!")
+            st.session_state.page = "menu"
         except:
             st.error("Invalid signup gang")
     if st.button('Back'):
         st.session_state.page = "start"
 
-def start_page():
-    st.title("Welcome to the App!")
-    st.write("Please choose an option to proceed.")
+def start_page(image_path):
+    st.markdown('<div class="parallax"></div>', unsafe_allow_html=True)  # Parallax background
     
-    login_button = st.button("Login Here")
-    signup_button = st.button("Sign Up Here")
+    st.markdown('<div class="start-container">', unsafe_allow_html=True)  # Start page container
+    st.header("Welcome to Our App!")
+    st.write("Scroll down to learn more about the app.")
     
-    if login_button:
-        st.session_state.page = "login" 
-    elif signup_button:
-        st.session_state.page = "signup"
+    # Buttons for navigating to login/signup
+    if st.button("Login", key="login", use_container_width=True):
+        st.session_state.page = "login"  # Navigate to login page
+    if st.button("Sign Up", key="signup", use_container_width=True):
+        st.session_state.page = "signup"  # Navigate to signup page
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def menu():
+    st.markdown("<h1 style='text-align: center;'>What Would You Like To Do?</h1>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Add custom CSS for spacing between columns
+    st.markdown("""
+        <style>
+            .css-1d391kg {
+                margin-right: 30px;
+            }
+            .css-18e3th9 {
+                margin-left: 30px;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("<h3 style='text-align: center;'>Take A Photo Of Your Food!</h3>", unsafe_allow_html=True)
+        st.image("photo1.jpeg", width=400)
+        if st.button("Take a photo of your food!", use_container_width=True):
+            st.write("You selected Option 1")
+
+    with col2:
+        st.markdown("<h3 style='text-align: center;'>Find Some Foods You Can Make Now!</h3>", unsafe_allow_html=True)
+        st.image("photo2.jpg", width=400)
+        if st.button("Find foods you can make now!", use_container_width=True):
+            st.write("You selected Option 2")
 
 def main():
     if "page" not in st.session_state:
         st.session_state.page = "start"  
-    
-    if st.session_state.page == "start":
-        start_page()
-    elif st.session_state.page == "login":
-        login()
-    elif st.session_state.page == "signup":
-        signup()
+
+    image_path = "background2.avif"
+
+    if os.path.exists(image_path):
+        inject_custom_css(image_path)
+        if st.session_state.page == "start":
+            start_page(image_path)
+        elif st.session_state.page == "about":
+            about_page()
+        elif st.session_state.page == "login":
+            login()
+        elif st.session_state.page == "signup":
+            signup()
+        elif st.session_state.page == "menu":
+            menu()
+    else:
+        st.error("Background image 'background.avif' not found in the 'images' folder.")
 
 if __name__ == "__main__":
     main()
