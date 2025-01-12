@@ -189,12 +189,12 @@ def option2():
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("### Do you have any dietary restrictions?")
-    dietary_restrictions = st.multiselect(
+    dietary_restrictions = st.radio(
         "Select any dietary restrictions:",
-        ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "None"],
-        default=[]
-    )
-    other_restriction = st.text_input("Other dietary restrictions (if any):", "")
+        ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Other"]
+)
+    if dietary_restrictions == "Other":
+        other_restriction = st.text_input("Specify your other dietary restriction:")
 
     st.markdown("### Do you have any specific food goals (e.g., cutting, bulking, maintaining)?")
     food_goals = st.text_input("Enter your food goals:")
