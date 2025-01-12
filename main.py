@@ -9,7 +9,7 @@ import ollama
 import io
 import tempfile
 
-co = cohere.ClientV2("THESECRETKEY")
+co = cohere.ClientV2("THESECRETKEYs")
 
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
