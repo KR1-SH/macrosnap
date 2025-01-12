@@ -5,6 +5,8 @@ import os
 import json
 import cohere
 
+co = cohere.Client('YOUR_API_KEY')
+
 firebaseConfig = {
   'apiKey': "AIzaSyB5utIbWGDdjJH9QpUCYp-L_kO219a5Ym0",
   'authDomain': "deltahacks2025-a77c1.firebaseapp.com",
@@ -58,6 +60,7 @@ Fat: 28g
 Carbohydrates: 40g
 Sugar: 5g
 """
+global user_inputs
 user_inputs = []
 
 def inject_custom_css(image_path):
@@ -254,18 +257,22 @@ def option2():
         primary_meal_goal = st.text_input("Specify your other goal:")
 
     if st.button("Submit"):
-        user_inputs.append(dietary_restrictions) 
-        user_inputs.append(food_goals)
-        user_inputs.append(available_foods)
-        user_inputs.append(primary_meal_goal)
         st.markdown("### Here's a summary of your answers:")
         st.write(f"Dietary restrictions: {dietary_restrictions} {'and ' + other_restriction if other_restriction else ''}")
         st.write(f"Food goals: {food_goals}")
         st.write(f"Available food items: {available_foods}")
         st.write(f"Meals per day: {primary_meal_goal}")
 
-def AI_response():
-    message = f"""Can you make a healthy recipe for {user_inputs[1]} using {user_inputs[2]} that is {user_inputs[0]}"""
+    if st.button("Continue", use_container_width=True):
+        user_inputs.append(dietary_restrictions) 
+        user_inputs.append(food_goals)
+        user_inputs.append(available_foods)
+        user_inputs.append(primary_meal_goal)
+        AI_response(dietary_restrictions, food_goals, available_foods, primary_meal_goal)
+
+def AI_response(dietary_restrictions, food_goals, available_foods, primary_meal_goal):
+    st.markdown("<h1 style='text-align: center;'>Food You Can Eat</h1>", unsafe_allow_html=True)
+    message = f"""Can you make a healthy recipe for {food_goals} using {available_foods} that is {dietary_restrictions} and {primary_meal_goal}"""
     response = co.chat(
         model="command-r-plus-08-2024",
         messages=[{"role": "system", "content": message_configuration},
@@ -274,7 +281,7 @@ def AI_response():
     ],
 
     )
-    print(response.message.content[0].text)
+    st.markdown(response.message.content[0].text)
 
 def main():
     if "page" not in st.session_state:
@@ -296,6 +303,8 @@ def main():
             menu()
         elif st.session_state.page == "option2":
             option2()
+        #elif st.session_state.page == "AI_response":
+           # AI_response()
     else:
         st.error("Background image 'background.avif' not found in the 'images' folder.")
 
