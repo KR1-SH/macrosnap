@@ -8,6 +8,7 @@ from PIL import Image
 import ollama
 import io
 import tempfile
+import sklearn
 
 co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
 
