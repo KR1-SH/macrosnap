@@ -8,7 +8,6 @@ from PIL import Image
 import ollama
 import io
 import tempfile
-import sklearn
 
 co = cohere.ClientV2(api_key="bySl2q8fIzNgKJrAR1IRAVKQhwgPdGzyD9eqclt2")
 
@@ -454,6 +453,7 @@ def main():
             AI_response_opt1()
     else:
         st.error("Background image 'background.avif' not found in the 'images' folder.")
+
 
 if __name__ == "__main__":
     main()
